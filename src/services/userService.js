@@ -1,6 +1,7 @@
 import { where } from "sequelize";
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
+import emailService from '../services/emailService';
 const salt = bcrypt.genSaltSync(10);
 
 let hashUserPassword = (password) => {
@@ -211,6 +212,100 @@ let getAllCodeService = (typeInput) => {
         }
     })
 }
+let checkUserByEmail = (email) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!email) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter'
+                })
+            } else {
+                let check = true;
+                let user = await db.User.findOne({
+                    where: { email: email }
+                });
+                if(user) check = false
+                resolve({
+                    errCode:0,
+                    check:check
+                    
+                });
+            }
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+let generateOTP=()=>{
+    const otpLength = 6;
+    let otp = '';
+    for (let i = 0; i < otpLength; i++) {
+        otp += Math.floor(Math.random() * 10); 
+    }
+    return otp;
+}
+let sendMailOtp = (data) => {
+    return new Promise(async (resolve, reject) => {
+        console.log('sdf0',data)
+        try {
+            if (!data.email||!data.language) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter'
+                })
+            } else {
+                let otp = generateOTP();
+                await emailService.sendOtpToEmail({
+                    email:data.email,
+                    language:data.language,
+                    otp:otp
+                })
+                resolve({
+                    errCode:0,
+                    data:otp
+                })
+            }
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+let resetPassword = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.email || !data.password ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required"
+                })
+            }
+            let user = await db.User.findOne({
+                where: { email: data.email },
+                raw: false
+            })
+            if (user) {
+                let hashPasswordFromBcrypt = await hashUserPassword(data.password);
+                user.password= hashPasswordFromBcrypt;
+               
+                await user.save();
+                resolve({
+                    errCode: 0,
+                    errMessage: 'reset password success!'
+                });
+            } else {
+                resolve({
+                    errCode: 2,
+                    errMessage: "User's not found!"
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 module.exports = {
     handleUserLogin: handleUserLogin,
     getAllUsers: getAllUsers,
@@ -218,4 +313,7 @@ module.exports = {
     deleteUser: deleteUser,
     updateUserData: updateUserData,
     getAllCodeService: getAllCodeService,
+    checkUserByEmail:checkUserByEmail,
+    sendMailOtp:sendMailOtp,
+    resetPassword:resetPassword
 }

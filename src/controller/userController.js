@@ -66,6 +66,50 @@ let getAllCode = async(req,res) =>{
         })
     }
 }
+let checkUserByEmail = async(req,res) =>{
+    try{
+        let data = await userService.checkUserByEmail(req.query.email);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let sendMailOtp = async(req,res) =>{
+    
+    try{
+        let data = await userService.sendMailOtp(req.body);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let resetPassword = async(req,res) =>{
+
+    try{
+        let data = await userService.resetPassword(req.body);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 module.exports ={
     handleLogin:handleLogin,
     handleGetAllUsers :handleGetAllUsers,
@@ -73,4 +117,7 @@ module.exports ={
     handleEditUser: handleEditUser,
     handleDeleteUser: handleDeleteUser,
     getAllCode: getAllCode,
+    checkUserByEmail:checkUserByEmail,
+    resetPassword:resetPassword,
+    sendMailOtp:sendMailOtp
 }

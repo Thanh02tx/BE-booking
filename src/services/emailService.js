@@ -1,4 +1,5 @@
 require('dotenv').config();
+import { dasherize } from 'i/lib/methods';
 import nodemailer from 'nodemailer';
 
 let sendSimpleEmail=async(dataSend)=>{
@@ -98,7 +99,47 @@ let getBodyHTMLEmailRemedy=(dataSend)=>{
     }
     return result;
 }
+let sendOtpToEmail=async(dataSend)=>{
+    let transporter = nodemailer.createTransport({
+        host:"smtp.gmail.com",
+        port:587,
+        secure:false,
+        auth:{
+            user:process.env.EMAIL_APP,
+            pass:process.env.EMAIL_APP_PASSWORD
+        }
+    });
+    
+    let sub = dataSend.language==='vi' ?'Xác thực thông tin tài khoản':'Verify account information'
+    let info  = await transporter.sendMail({
+        from:`"Thanh Do" <dotienthanh28062002@gmail.com>`,
+        to: dataSend.email,
+        subject: sub,
+        html:getBodyHTMLSendOtpToEmail(dataSend)
+    });
+}
+let getBodyHTMLSendOtpToEmail=(dataSend)=>{
+    console.log('sfa',dataSend)
+    let result='';
+    if(dataSend.language ==='en'){
+        result =`
+            <h4>Verify account information  </h4>
+            <h1>OTP - ${dataSend.otp} </h1>
+            <div>Thank you!</div>
+        
+        `
+    }
+    else  {
+        result =`
+        <h4>Xác thực thông tin tài khoản </h4>
+        <h1>OTP - ${dataSend.otp} </h1>
+        <div>Xin cảm ơn!</div>
+    `
+    }
+    return result;
+}
 module.exports={
     sendSimpleEmail:sendSimpleEmail,
-    sendAttachment:sendAttachment
+    sendAttachment:sendAttachment,
+    sendOtpToEmail:sendOtpToEmail
 }
