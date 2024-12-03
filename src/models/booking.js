@@ -11,16 +11,15 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Booking.belongsTo(models.User, {foreignKey:'patientId',targetKey:'id',as:'patientData'})
-      Booking.belongsTo(models.Allcode, {foreignKey:'timeType',targetKey:'keyMap',as:'timeTypeDataPatient'})
+      // Booking.belongsTo(models.User, {foreignKey:'patientId',targetKey:'id',as:'patientData'})
+      Booking.belongsTo(models.Patient_Record, { foreignKey: 'patientId' });
+      Booking.belongsTo(models.Schedule, { foreignKey: 'scheduleId' });
     }
   };
   Booking.init({
     statusId: DataTypes.STRING,
-    doctorId: DataTypes.INTEGER,
+    scheduleId: DataTypes.INTEGER,
     patientId: DataTypes.INTEGER,
-    date: DataTypes.STRING,
-    timeType: DataTypes.STRING,
     reason:DataTypes.STRING,
     token:DataTypes.STRING
 

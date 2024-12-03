@@ -20,9 +20,25 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
+      positionId: {
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
       priceId: {
         allowNull: false,
         type: Sequelize.STRING
+      },
+      positionId: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      gender: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      image: {
+        allowNull: false,
+        type: Sequelize.BLOB('long')
       },
       paymentId: {
         allowNull: false,

@@ -9,7 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       currentNumber:{
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
       maxNumber: {
         type: Sequelize.INTEGER
@@ -22,6 +23,9 @@ module.exports = {
       },
       doctorId: {
         type: Sequelize.INTEGER
+      },
+      token: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

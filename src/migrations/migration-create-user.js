@@ -23,22 +23,7 @@ module.exports = {
       lastName: {
         type: Sequelize.STRING
       },
-      address: {
-        type: Sequelize.STRING
-      },
-      phonenumber: {
-        type: Sequelize.STRING
-      },
-      gender: {
-        type: Sequelize.STRING
-      },
-      image: {
-        type: Sequelize.BLOB('long')
-      },
       roleId: {
-        type: Sequelize.STRING
-      },
-      positionId: {
         type: Sequelize.STRING
       },
       createdAt: {

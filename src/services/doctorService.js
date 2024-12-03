@@ -3,7 +3,7 @@ import db from '../models/index';
 require('dotenv').config();
 import _, { includes } from 'lodash';
 import emailService from '../services/emailService';
-
+import { v4 as uuid4 } from 'uuid';
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 let getTopDoctorHomeService = (limitInput) => {
     return new Promise(async (resolve, reject) => {
@@ -15,9 +15,15 @@ let getTopDoctorHomeService = (limitInput) => {
                 attributes: {
                     exclude: ['password']
                 },
-                include: [
-                    { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
-                    { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
+                include: [         
+                    {model: db.Doctor_Infor, 
+                        attributes:['specialtyId','image'],
+                        include:[
+                            {model: db.Specialty , attributes:['nameVi','nameEn']},
+                            { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                            { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
+                        ]
+                    }
                 ],
                 raw: true,
                 nest: true
@@ -38,7 +44,7 @@ let getAllDoctors = () => {
             let doctors = await db.User.findAll({
                 where: { roleId: 'R2' },
                 attributes: {
-                    exclude: ['password', 'image']
+                    exclude: ['password']
                 }
 
             });
@@ -53,7 +59,7 @@ let getAllDoctors = () => {
     })
 }
 let checkRequiredField = (data) => {
-    let arrFields = ['doctorId', 'contentHTMLVi', 'contentMarkdownVi', 'contentHTMLEn', 'contentMarkdownEn', 'action',
+    let arrFields = ['doctorId','selectedPosition','image','selectedGender', 'contentHTMLVi', 'contentMarkdownVi', 'contentHTMLEn', 'contentMarkdownEn', 'action',
         'selectedPrice', 'selectedPayment', 'selectedSpecialty', 'selectedClinic', 'descriptionVi', 'descriptionEn'
     ]
     let isValid = true;
@@ -95,6 +101,9 @@ let saveDatailInforDoctor = (inputData) => {
                         doctorId: inputData.doctorId,
                         priceId: inputData.selectedPrice,
                         paymentId: inputData.selectedPayment,
+                        positionId:inputData.selectedPosition,
+                        gender:inputData.selectedGender,
+                        image:inputData.image,
                         specialtyId: inputData.selectedSpecialty,
                         clinicId: inputData.selectedClinic,
                         noteVi: inputData.noteVi,
@@ -106,7 +115,9 @@ let saveDatailInforDoctor = (inputData) => {
                         raw: false  // sửa raw:true
                     })
                     if (doctorInfor) {
-
+                        doctorInfor.positionId=inputData.selectedPosition,
+                        doctorInfor.gender=inputData.selectedGender,
+                        doctorInfor.image=inputData.image,
                         doctorInfor.contentHTMLVi = inputData.contentHTMLVi;
                         doctorInfor.contentMarkdownVi = inputData.contentMarkdownVi;
                         doctorInfor.descriptionVi = inputData.descriptionVi;
@@ -152,8 +163,12 @@ let getInforDoctorById = (inputId) => {
                         exclude: ['id', 'doctorId']
                     },
                     include: [
+
                         { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                         { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                        { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                        { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
+                        
                     ],
                     raw: false,
                     nest: true
@@ -185,18 +200,20 @@ let getDetailDoctorById = (inputId) => {
                         id: inputId
                     },
                     attributes: {
-                        exclude: ['id', 'doctorId']
+                        exclude: ['id','password' ]
                     },
                     include: [
-                        { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                        
                         {
                             model: db.Doctor_Infor,
                             attributes: {
                                 exclude: ['id', 'doctorId']
                             },
                             include: [
+                                { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                                { model: db.Specialty,attributes: ['nameVi', 'nameEn'] },
                             ]
                         },
 
@@ -205,8 +222,8 @@ let getDetailDoctorById = (inputId) => {
                     nest: true
 
                 })
-                if (data && data.image) {
-                    data.image = new Buffer.from(data.image, 'base64').toString('binary');
+                if (data && data.Doctor_Infor&&data.Doctor_Infor.image) {
+                    data.Doctor_Infor.image = new Buffer.from(data.Doctor_Infor.image, 'base64').toString('binary');
                 }
                 if (!data) data = {}
                 resolve({
@@ -228,11 +245,11 @@ let bulkCreateSchedule = (data) => {
                     errMessage: "Missing required parameter!"
                 })
             } else {
-                console.log("max", MAX_NUMBER_SCHEDULE);
                 let schedule = data.arrSchedule;
                 if (schedule && schedule.length > 0) {
                     schedule = schedule.map(item => {
                         item.maxNumber = MAX_NUMBER_SCHEDULE;
+                        item.token=uuid4();
                         return item;
                     })
                 }
@@ -297,6 +314,39 @@ let getScheduleByDate = (doctorId, date) => {
         }
     })
 }
+let getScheduleByToken= (token) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!token ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                let data = await db.Schedule.findOne({
+                    where: {
+                        token: token,
+                    },
+                    include: [
+                        { model: db.Allcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
+                        { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
+
+                    ],
+                    raw: false,
+                    nest: true
+                })
+                if (!data) data = {};
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 let getExtraInforDoctorById = (doctorId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -346,20 +396,19 @@ let getProfileDoctorById = (inputId) => {
                         exclude: ['password']
                     },
                     include: [
-                        { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                       
                         { model: db.Doctor_Infor, 
-                            attributes: ['descriptionVi', 'contentHTMLVi','descriptionEn', 'contentHTMLEn' ] ,
+                            attributes: ['descriptionVi', 'contentHTMLVi','descriptionEn', 'contentHTMLEn','image' ] ,
                             include:[
+                                { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
-                                { model: db.Clinic, attributes: ['provinceId'] ,
+                                { model: db.Clinic, attributes: ['provinceId','name','address'] ,
                                     include:[
                                         { model: db.Allcode, as: 'provinceData', attributes: ['valueEn', 'valueVi'] },
                                     ]
                                 },
-                            // ] include: [
-                            //     { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },
-                            //     { model: db.Allcode, as: 'paymentTypeData', attributes: ['valueEn', 'valueVi'] },
+                    
                             ]
                            
                         },
@@ -369,8 +418,8 @@ let getProfileDoctorById = (inputId) => {
                     raw: false,
                     nest: true
                 })
-                if (data && data.image) {
-                    data.image = new Buffer.from(data.image, 'base64').toString('binary');
+                if (data&& data.Doctor_Infor && data.Doctor_Infor.image) {
+                    data.Doctor_Infor.image = new Buffer.from(data.Doctor_Infor.image, 'base64').toString('binary');
                 }
                 if (!data) data = {}
                 resolve({
@@ -459,6 +508,7 @@ let sendRemedy = (data) => {
         }
     })
 }
+
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
     getAllDoctors: getAllDoctors,
@@ -467,8 +517,9 @@ module.exports = {
     getDetailDoctorById: getDetailDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
+    getScheduleByToken:getScheduleByToken,
     getExtraInforDoctorById: getExtraInforDoctorById,
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
-    sendRemedy: sendRemedy
+    sendRemedy: sendRemedy,
 }

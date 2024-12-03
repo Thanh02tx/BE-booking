@@ -4,10 +4,11 @@ const { where } = require("sequelize")
 
 
 let createSpecialty = (data) => {
+    console.log('sfa',data)
 
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.nameVi || !data.nameEn || !data.imageBase64 || !data.descriptionHTMLVi || !data.descriptionMarkdownVi || !data.descriptionHTMLEn || !data.descriptionMarkdownEn) {
+            if (!data.nameVi || !data.nameEn || !data.image || !data.descriptionHTMLVi || !data.descriptionMarkdownVi || !data.descriptionHTMLEn || !data.descriptionMarkdownEn) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing parameter"
@@ -16,7 +17,7 @@ let createSpecialty = (data) => {
                 await db.Specialty.create({
                     nameVi: data.nameVi,
                     nameEn: data.nameEn,
-                    image: data.imageBase64,
+                    image: data.image,
                     descriptionHTMLVi: data.descriptionHTMLVi,
                     descriptionMarkdownVi: data.descriptionMarkdownVi,
                     descriptionHTMLEn: data.descriptionHTMLEn,
@@ -128,7 +129,6 @@ let getDetailSpecialtyById = (inputId, province) => {
     })
 }
 let editSpecialty = (data) => {
-    console.log('dfss',data)
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id || !data.nameVi||!data.nameEn|| !data.image

@@ -110,14 +110,90 @@ let resetPassword = async(req,res) =>{
         })
     }
 }
+let changePassword = async(req,res) =>{
+
+    try{
+        let data = await userService.changePassword(req.body);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let putEditUserHome = async(req,res) =>{
+    try{
+        let data = await userService.putEditUserHome(req.body);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let getAllProvinceJson = async(req,res) =>{
+    try{
+        let data = await userService.getAllProvinceJson();
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let getAllDistrictJson = async(req,res) =>{
+    try{
+        let data = await userService.getAllDistrictJson(req.query.id);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+let getAllWardJson = async(req,res) =>{
+    try{
+        let data = await userService.getAllWardJson(req.query.id);
+        return res.status(200).json(data);
+        
+    }
+    catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode:-1,
+            errMessage: 'Error from server'
+        })
+    }
+}
 module.exports ={
+    getAllProvinceJson:getAllProvinceJson,
+    getAllDistrictJson:getAllDistrictJson,
+    getAllWardJson:getAllWardJson,
     handleLogin:handleLogin,
     handleGetAllUsers :handleGetAllUsers,
     handleCreateNewUser: handleCreateNewUser,
     handleEditUser: handleEditUser,
+    putEditUserHome:putEditUserHome,
     handleDeleteUser: handleDeleteUser,
     getAllCode: getAllCode,
     checkUserByEmail:checkUserByEmail,
     resetPassword:resetPassword,
+    changePassword:changePassword,
     sendMailOtp:sendMailOtp
 }

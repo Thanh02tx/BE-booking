@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Schedule.belongsTo(models.Allcode, {foreignKey:'timeType',targetKey:'keyMap',as:'timeTypeData'})
       Schedule.belongsTo(models.User, {foreignKey:'doctorId',targetKey:'id',as:'doctorData'})
-
+      Schedule.hasMany(models.Booking, { foreignKey: 'scheduleId' })
     }
   };
   Schedule.init({
@@ -20,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     maxNumber: DataTypes.INTEGER,
     date: DataTypes.STRING,
     timeType: DataTypes.STRING,
-    doctorId: DataTypes.INTEGER
+    doctorId: DataTypes.INTEGER,
+    token:DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Schedule',

@@ -8,6 +8,9 @@ import clinicController from '../controller/clinicController';
 import handbookController from '../controller/handbookController';
 let router = express.Router();
 let initWebRoutes = (app) =>{
+    router.get('/api/get-all-province-json',userController.getAllProvinceJson);
+    router.get('/api/get-all-district-json',userController.getAllDistrictJson);
+    router.get('/api/get-all-ward-json',userController.getAllWardJson);
     router.get('/',homeController.getHomePage);
     router.get('/crud',homeController.getCRUD);
     router.post('/post-crud',homeController.postCRUD);
@@ -21,8 +24,10 @@ let initWebRoutes = (app) =>{
     router.post('/api/send-mail-otp',userController.sendMailOtp);
     router.post('/api/create-new-user',userController.handleCreateNewUser);
     router.put('/api/edit-user',userController.handleEditUser);
+    router.put('/api/edit-user-home',userController.putEditUserHome);
     router.delete('/api/delete-user',userController.handleDeleteUser);
-    router.put('/api/reset-password',userController.resetPassword)
+    router.put('/api/reset-password',userController.resetPassword);
+    router.put('/api/change-password',userController.changePassword)
     router.get('/api/allcode',userController.getAllCode);
     router.get('/api/top-doctor-home',doctorController.getTopDoctorHome);
     router.get('/api/get-all-doctors',doctorController.getAllDoctors);
@@ -32,11 +37,13 @@ let initWebRoutes = (app) =>{
     router.get('/api/get-list-patient-for-doctor',doctorController.getListPatientForDoctor);
     router.post('/api/bulk-create-schedule',doctorController.bulkCreateSchedule);
     router.get('/api/get-schedule-doctor-by-date',doctorController.getScheduleByDate);
+    router.get('/api/get-schedule-by-token',doctorController.getScheduleByToken);
     router.get('/api/get-extra-infor-doctor-by-id',doctorController.getExtraInforDoctorById);
     router.get('/api/get-profile-doctor-by-id',doctorController.getProfileDoctorById);
     router.post('/api/send-remedy',doctorController.sendRemedy);
 
     router.post('/api/patient-book-appointment',patientController.postBookingAppointment);
+    router.post('/api/book-appointment-no-sign-in',patientController.postBookAppointmentNoSignIn);
     router.post('/api/verify-book-appointment',patientController.postVerifyBookAppointment);
     router.post('/api/create-new-specialty',specialtyController.createSpecialty);
     router.get('/api/get-all-specialty',specialtyController.getAllSpecialty);
@@ -47,15 +54,16 @@ let initWebRoutes = (app) =>{
     router.get('/api/get-all-clinic',clinicController.getAllClinic);
     router.put('/api/put-edit-clinic',clinicController.putEditClinic);
     router.delete('/api/delete-clinic',clinicController.deleteClinic);
-    
     router.get('/api/get-detail-clinic-by-id',clinicController.getDetailClinicById);
     router.get('/api/get-allcode-specialty',specialtyController.getAllCodeSpecialty);
-
     router.post('/api/create-new-handbook',handbookController.createNewHandbook);
     router.get('/api/get-all-handbook',handbookController.getAllHandbook);
     router.put('/api/put-edit-handbook',handbookController.putEditHandbook);
     router.delete('/api/delete-handbook',handbookController.deleteHandbook);
     router.get('/api/get-detail-handbook-by-id',handbookController.getDetailHandbookById);
+    router.get('/api/get-all-patient-record',patientController.getAllPatientRecord);
+    router.post('/api/create-new-patient-record',patientController.createNewPatientRecord);
+    router.put('/api/update-patient-record',patientController.updatePatientRecord);
     return app.use("/",router);
 }
 module.exports = initWebRoutes;

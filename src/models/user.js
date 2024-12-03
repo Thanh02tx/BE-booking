@@ -11,9 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      User.belongsTo(models.Allcode, {foreignKey:'positionId',targetKey:'keyMap',as:'positionData'})
-      User.belongsTo(models.Allcode, {foreignKey:'gender',targetKey:'keyMap',as:'genderData'})
-      User.hasOne(models.Doctor_Referal, {foreignKey:'doctorId'}),
+      // User.belongsTo(models.Allcode, {foreignKey:'positionId',targetKey:'keyMap',as:'positionData'})
+      // User.belongsTo(models.Allcode, {foreignKey:'gender',targetKey:'keyMap',as:'genderData'})
       User.hasOne(models.Doctor_Infor, {foreignKey:'doctorId'})
       User.hasMany(models.Schedule, {foreignKey:'doctorId',targetKey:'doctorId',as:'doctorData'})
       User.hasMany(models.Booking, {foreignKey:'patientId',as:'patientData'})
@@ -24,12 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
-    address: DataTypes.STRING,
-    phonenumber: DataTypes.STRING,
-    gender: DataTypes.STRING,
-    image: DataTypes.BLOB('long'),
     roleId: DataTypes.STRING,
-    positionId: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',

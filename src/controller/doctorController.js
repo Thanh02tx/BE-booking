@@ -33,7 +33,6 @@ let getAllDoctors = async (req,res) =>{
 let postInforDoctor = async(req,res) =>{
     try{
         let response = await doctorService.saveDatailInforDoctor(req.body);
-        console.log('dđf',response);
         return res.status(200).json(response)
     }
     catch(e){
@@ -152,6 +151,19 @@ let sendRemedy=async(req,res)=>{
        })
     }
 }
+let getScheduleByToken=async(req,res)=>{
+    try{
+        let infor = await doctorService.getScheduleByToken(req.query.token);
+   
+        return res.status(200).json(infor)
+    }catch(e){
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+           message: 'Error from server...'
+       })
+    }
+}
 
 module.exports ={
     getTopDoctorHome:getTopDoctorHome,
@@ -161,8 +173,9 @@ module.exports ={
     getDetailDoctorById:getDetailDoctorById,
     bulkCreateSchedule:bulkCreateSchedule,
     getScheduleByDate:getScheduleByDate,
+    getScheduleByToken:getScheduleByToken,
     getExtraInforDoctorById:getExtraInforDoctorById,
     getProfileDoctorById:getProfileDoctorById,
     getListPatientForDoctor:getListPatientForDoctor,
-    sendRemedy:sendRemedy
+    sendRemedy:sendRemedy,
 }
