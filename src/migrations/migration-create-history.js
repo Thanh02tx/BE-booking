@@ -8,17 +8,32 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      patientId:{
+      idBooking: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      doctorRating: {
         type: Sequelize.INTEGER
       },
-      doctorId: {
+      waitingTimeRating: {
         type: Sequelize.INTEGER
       },
-      description: {
+      facilityRating: {
+        type: Sequelize.INTEGER
+      },
+      staffRating: {
+        type: Sequelize.INTEGER
+      },
+      status: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1
+      },
+      comments: {
         type: Sequelize.TEXT
       },
-      files: {
-        type: Sequelize.TEXT
+      imageResult: {
+        allowNull: false,
+        type: Sequelize.BLOB('long')
       },
       createdAt: {
         allowNull: false,

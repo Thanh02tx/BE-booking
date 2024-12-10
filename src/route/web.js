@@ -19,6 +19,8 @@ let initWebRoutes = (app) =>{
     router.post('/put-crud',homeController.putCRUD);
     router.get('/delete-crud',homeController.deleteCRUD);
     router.post('/api/login',userController.handleLogin);
+    router.post('/api/check-role',userController.checkRole);
+    router.post('/api/check-role-admin',userController.checkRoleAdmin);
     router.get('/api/get-all-users',userController.handleGetAllUsers);
     router.get('/api/check-user-by-email',userController.checkUserByEmail);
     router.post('/api/send-mail-otp',userController.sendMailOtp);
@@ -62,8 +64,11 @@ let initWebRoutes = (app) =>{
     router.delete('/api/delete-handbook',handbookController.deleteHandbook);
     router.get('/api/get-detail-handbook-by-id',handbookController.getDetailHandbookById);
     router.get('/api/get-all-patient-record',patientController.getAllPatientRecord);
+    router.get('/api/get-all-booking-admin',patientController.getAllBookingAdmin);
+    router.get('/api/get-booking-by-id',patientController.getBookingById);
     router.post('/api/create-new-patient-record',patientController.createNewPatientRecord);
     router.put('/api/update-patient-record',patientController.updatePatientRecord);
+    router.put('/api/confirm-appointment',patientController.confirmAppointment);
     return app.use("/",router);
 }
 module.exports = initWebRoutes;

@@ -1,6 +1,8 @@
 import { where } from "sequelize";
 import db from "../models/index";
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
 import emailService from '../services/emailService';
 import provinces from '../json/provinces.json'
 import districts from '../json/districts.json'
@@ -8,7 +10,10 @@ import wards from '../json/wards.json'
 import { fill } from "lodash";
 import { response } from "express";
 // const pro = require('../json/provinces.json');
+require('dotenv').config();
+const SECRET_KEY = process.env.SECRET_KEY
 const salt = bcrypt.genSaltSync(10);
+
 
 let hashUserPassword = (password) => {
     return new Promise(async (resolve, reject) => {
@@ -21,39 +26,62 @@ let hashUserPassword = (password) => {
     })
 }
 
-let handleUserLogin = (email, password) => {
+let handleUserLogin = (dataInput) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let userData = {};
-            let isExist = await checkUserEmail(email);
-            if (isExist) {
-                let user = await db.User.findOne({
-                    attributes: ['id', 'email', 'roleId', 'password', 'firstName', 'lastName'],
-                    where: { email: email },
-                    raw: true
+            if (!dataInput.email || !dataInput.password) {
+                resolve({
+                    errCode:1,
+                    errMessage:'missing parameter'
+                })
+            }else{
+                let isExist = await checkUserEmail(dataInput.email);
+                if (isExist) {
+                    let user = await db.User.findOne({
+                        attributes: ['id', 'email', 'roleId', 'password', 'firstName', 'lastName'],
+                        where: { email: dataInput.email },
+                        raw: true
 
-                });
-                if (user) {
-                    let check = await bcrypt.compareSync(password, user.password);
-                    if (check) {
-                        userData.errCode = 0;
-                        userData.errMessage = 'ok';
-                        delete user.password;
-                        userData.user = user;
+                    });
+                    if (user) {
+                        let token = jwt.sign(
+                            { id: user.id, email: user.email, roleId: user.roleId }, // Payload
+                            SECRET_KEY,                                             // Secret Key
+                            // { expiresIn: '1h' }                                     // Thời gian hết hạn
+                        );
+                        let check = await bcrypt.compareSync(dataInput.password, user.password);
+                        if (check) {
+                            let ob = {
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                token: token
+                            }
+                            resolve({
+                                errCode: 0,
+                                user: ob
+                            })
+                        } else {
+                            resolve({
+                                errCode:3,
+                                errMessage:'wrong password'
+                            })
+                        }
                     } else {
-                        userData.errCode = 3;
-                        userData.errMessage = 'Wrong password';
+                        resolve({
+                            errCode:3,
+                            errMessage:"User's note found!"
+                        })
+                        
                     }
-                } else {
-                    userData.errCode = 2;
-                    userData.errMessage = "User's note found!";
+                }
+                else {
+                    resolve({
+                        errCode:4,
+                        errMessage:"Your's email isn't exist in your system. Plz try other email!"
+                    })
                 }
             }
-            else {
-                userData.errCode = 1;
-                userData.errMessage = "Your's email isn't exist in your system. Plz try other email!";
-            }
-            resolve(userData);
+
         } catch (e) {
             reject(e);
         }
@@ -115,7 +143,7 @@ let createNewUser = (data) => {
                         errCode: 2,
                         errMessage: "Your's email is already been userd,Plz try another email!",
                     })
-                }else {
+                } else {
                     let hashPasswordFromBcrypt = await hashUserPassword(data.password);
                     await db.User.create({
                         email: data.email,
@@ -130,7 +158,7 @@ let createNewUser = (data) => {
                     });
                 }
 
-            } 
+            }
 
         } catch (e) {
             reject(e);
@@ -285,7 +313,6 @@ let generateOTP = () => {
 }
 let sendMailOtp = (data) => {
     return new Promise(async (resolve, reject) => {
-        console.log('sdf0', data)
         try {
             if (!data.email || !data.language) {
                 resolve({

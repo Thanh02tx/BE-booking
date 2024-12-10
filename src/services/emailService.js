@@ -12,10 +12,11 @@ let sendSimpleEmail=async(dataSend)=>{
             pass:process.env.EMAIL_APP_PASSWORD
         }
     });
+    let subj = dataSend.language==='vi'? 'Thông tin đặt lịch khám bệnh':'Appointment Information for Medical Check-up'
     let info  = await transporter.sendMail({
         from:`"Thanh Do" <dotienthanh28062002@gmail.com>`,
         to: dataSend.reciverEmail,
-        subject:"Thông tin đặt lịch khám bệnh",
+        subject:subj,
         html:getBodyHTMLEmail(dataSend)
     });
 }
@@ -80,6 +81,7 @@ let getBodyHTMLEmailRemedy=(dataSend)=>{
     let result='';
     if(dataSend.language ==='en'){
         result =`
+            <h2>${dataSend.nameClinic}</h2>
             <h3>Dear ${dataSend.firstName} ${dataSend.lastName}! </h3>
             <p>You received this email because you scheduled a medical appointment online on Booking."</p>
             <p>Appointment booking information:</p>
@@ -90,6 +92,7 @@ let getBodyHTMLEmailRemedy=(dataSend)=>{
     }
     else  {
         result =`
+        <h2>${dataSend.nameClinic}</h2>
         <h3>Xin chào ${dataSend.lastName} ${dataSend.firstName}! </h3>
         <p>Bạn nhận được email này vì đã đặt lịch khám bẹnh online trên Booking </p>
         <p>Thông tin đơn thuốc/hoá đơn được gửi trong file đính kèm</p>
