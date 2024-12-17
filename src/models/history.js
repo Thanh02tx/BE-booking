@@ -10,14 +10,19 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+  
+    History.belongsTo(models.Booking, {foreignKey: 'idBooking'});
     }
   };
   History.init({
-    patientId: DataTypes.INTEGER,
-    doctorId: DataTypes.INTEGER,
-    description: DataTypes.TEXT,
-    files: DataTypes.TEXT
+    idBooking:DataTypes.INTEGER,
+    imageResult:DataTypes.TEXT,
+    doctorRating: DataTypes.INTEGER,
+    waitingTimeRating: DataTypes.INTEGER,
+    facilityRating : DataTypes.INTEGER,
+    staffRating :DataTypes.INTEGER,
+    comments: DataTypes.TEXT,
+    status:DataTypes.INTEGER,
     
   }, {
     sequelize,

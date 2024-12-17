@@ -69,6 +69,11 @@ let initWebRoutes = (app) =>{
     router.post('/api/create-new-patient-record',patientController.createNewPatientRecord);
     router.put('/api/update-patient-record',patientController.updatePatientRecord);
     router.put('/api/confirm-appointment',patientController.confirmAppointment);
+    router.get('/api/get-booking-patient',patientController.getBookingPatient);
+    router.put('/api/put-patient-feedback',patientController.putPatientFeedback);
+    router.get('/api/get-feedback-admin',patientController.getFeedbackAdmin);
+    router.put('/api/put-approve-feedback',patientController.putApproveFeedback);
+    router.get('/api/get-history-by-id',patientController.getHistoryById);
     return app.use("/",router);
 }
 module.exports = initWebRoutes;

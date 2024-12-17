@@ -475,12 +475,12 @@ let getBookingById = (id) => {
                                                 {
                                                     model: db.Clinic,
                                                     attributes: ['name', 'address'],
-                                                    include:[
+                                                    include: [
                                                         {
                                                             model: db.Allcode,
                                                             as: 'provinceData',
                                                             attributes: ['valueVi', 'valueEn'],
-                                                        } 
+                                                        }
                                                     ]
                                                 },
                                                 {
@@ -502,12 +502,12 @@ let getBookingById = (id) => {
                         },
                         {
                             model: db.Patient_Record,
-                            attributes: ['lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId','wardId','address'],
-                            include:[
+                            attributes: ['id', 'lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId', 'wardId', 'address'],
+                            include: [
                                 {
                                     model: db.Allcode,
-                                    as:'genderPatient',
-                                    attributes: ['valueVi', 'valueEn'], 
+                                    as: 'genderPatient',
+                                    attributes: ['valueVi', 'valueEn'],
                                 }
                             ]
                         }
@@ -528,6 +528,277 @@ let getBookingById = (id) => {
     })
 }
 
+let getBookingPatient = (idInput) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!idInput) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing parameter"
+                });
+            } else {
+                let bookings = await db.Patient_Record.findOne({
+                    where: {
+                        id: idInput
+                    },
+                    attributes: {
+                        exclude: ['idAccount']
+                    },
+                    include: [
+                        {
+                            model: db.Booking,
+                            attributes: ['id', 'statusId'],
+                            include: [
+                                {
+                                    model: db.Schedule,
+                                    attributes: ['date'],
+                                    include: [
+                                        {
+                                            model: db.User,
+                                            as: 'doctorData',
+                                            attributes: ['id'],
+                                            include: [
+                                                {
+                                                    model: db.Doctor_Infor,
+                                                    attributes: ['id'],
+                                                    include: [
+                                                        {
+                                                            model: db.Specialty,
+                                                            attributes: ['nameVi', 'nameEn'],
+                                                        },
+                                                        {
+                                                            model: db.Clinic,
+                                                            attributes: ['name'],
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                    ]
+                                },
+                                {
+                                    model: db.Allcode,
+                                    as: 'statusData',
+                                    attributes: ['valueVi', 'valueEn'],
+                                },
+                                {
+                                    model: db.History,
+                                    attributes: ['id', 'status', 'imageResult']
+                                }
+                            ]
+                        }
+                    ],
+                    order: [
+                        [db.Booking, db.Schedule, 'date', 'DESC'] // Sắp xếp theo ngày giảm dần
+                    ],
+                    raw: false,
+                    nest: true
+                });
+
+                if (!bookings) bookings = {};
+                resolve({
+                    errCode: 0,
+                    data: bookings
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+let putPatientFeedback = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.staffRating&&!data.waitingTimeRating&&!data.doctorRating&&!data.facilityRating&&!data.id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing parameter"
+                })
+            } else {
+                let history = await db.History.findOne({
+                    where: {
+                        id: data.id
+                    },
+                    raw:false 
+                })
+
+                if (history) {
+                    history.doctorRating=data.doctorRating,
+                    history.waitingTimeRating= data.waitingTimeRating,
+                    history.staffRating= data.staffRating,
+                    history.facilityRating=data.facilityRating,
+                    history.comments=data.detailFeedback,
+                    history.status=2
+                    await history.save()
+                }else{
+                    resolve({
+                        errCode:2,
+                    })
+                }
+                resolve({
+                    errCode:0,
+                    errMessage:'ok'
+                }) 
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let getFeedbackAdmin = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let data = await db.History.findAll({
+                where:{
+                    status:2
+                },
+                attributes:{
+                    exclude:['imageResult']
+                }
+            })
+            if(!data) data =[];
+            resolve({
+                errCode:0,
+                data:data
+            })
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+let putApproveFeedback = (data) => {
+    return new Promise(async (resolve, reject) => {
+        // console.log('ss',data)
+        try {
+            if(!data.id){
+                resolve({
+                    errCode:1,
+                    errMessage:'Mising parameter'
+                })
+            }else{
+                let htr = await db.History.findOne({
+                    where:{
+                        id:data.id,
+                        status:2
+                    },
+                    raw:false
+                })
+                if(htr) {
+                    htr.status=3
+                    await htr.save()
+                    resolve({
+                        errCode:0,
+                        errMessage:"ok"
+                    })
+                }
+                resolve({
+                    errCode:2,
+                    errMessage:'No hisroty'
+                })
+            }
+            
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+let getHistoryById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!id) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'missing parameter'
+                })
+            }
+            else {
+                let data = await db.History.findOne({
+                    where: {
+                        id: id
+                    },
+                    attributes: ['id'],
+                    include: [
+                        {model: db.Booking,
+                            attributes: ['reason'],
+                            include:[
+                                {
+                                    model: db.Schedule,
+                                    attributes: ['date'],
+                                    include: [
+                                        {
+                                            model: db.User,
+                                            as: 'doctorData',
+                                            attributes: ['firstName', 'lastName'],
+                                            include: [
+                                                {
+                                                    model: db.Doctor_Infor,
+                                                    attributes: [],
+                                                    include: [
+                                                        {
+                                                            model: db.Specialty,
+                                                            attributes: ['nameVi', 'nameEn'],
+                                                        },
+                                                        {
+                                                            model: db.Clinic,
+                                                            attributes: ['name', 'address'],
+                                                            include: [
+                                                                {
+                                                                    model: db.Allcode,
+                                                                    as: 'provinceData',
+                                                                    attributes: ['valueVi', 'valueEn'],
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            model: db.Allcode,
+                                                            as: 'positionData',
+                                                            attributes: ['valueVi', 'valueEn'],
+                                                        }
+        
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            model: db.Allcode,
+                                            as: 'timeTypeData',
+                                            attributes: ['valueVi', 'valueEn'],
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: db.Patient_Record,
+                                    attributes: ['id', 'lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId', 'wardId', 'address'],
+                                    include: [
+                                        {
+                                            model: db.Allcode,
+                                            as: 'genderPatient',
+                                            attributes: ['valueVi', 'valueEn'],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                        
+                    ],
+                    raw: true,
+                    nest: true
+                })
+                if (!data) data = {}
+                resolve({
+                    errCode: 0,
+                    data: data
+                })
+            }
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
     postBookingAppointment: postBookingAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
@@ -537,5 +808,10 @@ module.exports = {
     updatePatientRecord: updatePatientRecord,
     getAllBookingAdmin: getAllBookingAdmin,
     confirmAppointment: confirmAppointment,
-    getBookingById: getBookingById
+    getBookingById: getBookingById,
+    getBookingPatient: getBookingPatient,
+    putPatientFeedback:putPatientFeedback,
+    getFeedbackAdmin:getFeedbackAdmin,
+    putApproveFeedback:putApproveFeedback,
+    getHistoryById:getHistoryById
 }

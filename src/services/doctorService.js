@@ -400,7 +400,7 @@ let getProfileDoctorById = (inputId) => {
 
                         {
                             model: db.Doctor_Infor,
-                            attributes: ['descriptionVi', 'contentHTMLVi', 'descriptionEn', 'contentHTMLEn', 'image'],
+                            attributes: ['descriptionVi', 'contentHTMLVi', 'descriptionEn', 'contentHTMLEn', 'image','count'],
                             include: [
                                 { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
                                 { model: db.Allcode, as: 'priceTypeData', attributes: ['valueEn', 'valueVi'] },

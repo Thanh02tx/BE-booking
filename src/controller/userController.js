@@ -178,18 +178,31 @@ let resetPassword = async (req, res) => {
     }
 }
 let changePassword = async (req, res) => {
-
     try {
-        let data = await userService.changePassword(req.body);
-        return res.status(200).json(data);
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            let id = decoded.id;
+            let data ={
+                ...req.body,
+                id:id
+            }
+            let infor = await userService.changePassword(data);
+            return res.status(200).json(infor);
+        });
 
-    }
-    catch (e) {
+
+    } catch (e) {
         console.log(e);
-        return res.status(200).json({
+        return res.status(500).json({
             errCode: -1,
-            errMessage: 'Error from server'
-        })
+            message: 'Error from server...'
+        });
     }
 }
 let putEditUserHome = async (req, res) => {

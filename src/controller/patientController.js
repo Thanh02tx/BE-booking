@@ -132,7 +132,7 @@ let updatePatientRecord = async (req, res) => {
 
 let getAllBookingAdmin = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; 
+        const token = req.headers['authorization']?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ errCode: -2, message: 'Token is required' });
         }
@@ -142,15 +142,15 @@ let getAllBookingAdmin = async (req, res) => {
             }
 
             const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
-            if(role==='R1'){
+            if (role === 'R1') {
                 let infor = await patientService.getAllBookingAdmin();
                 return res.status(200).json(infor);
             }
-            else{
+            else {
                 return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
             }
         });
-       
+
 
     } catch (e) {
         console.log(e);
@@ -163,7 +163,7 @@ let getAllBookingAdmin = async (req, res) => {
 
 let confirmAppointment = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; 
+        const token = req.headers['authorization']?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ errCode: -2, message: 'Token is required' });
         }
@@ -173,15 +173,15 @@ let confirmAppointment = async (req, res) => {
             }
 
             const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
-            if(role==='R1'){
+            if (role === 'R1') {
                 let infor = await patientService.confirmAppointment(req.body);
                 return res.status(200).json(infor);
             }
-            else{
+            else {
                 return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
             }
         });
-       
+
 
     } catch (e) {
         console.log(e);
@@ -194,7 +194,7 @@ let confirmAppointment = async (req, res) => {
 
 let getBookingById = async (req, res) => {
     try {
-        const token = req.headers['authorization']?.split(' ')[1]; 
+        const token = req.headers['authorization']?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ errCode: -2, message: 'Token is required' });
         }
@@ -204,15 +204,153 @@ let getBookingById = async (req, res) => {
             }
 
             const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
-            if(role==='R1'||role==='R2'){
+            if (role === 'R1' || role === 'R2') {
                 let infor = await patientService.getBookingById(req.query.id);
                 return res.status(200).json(infor);
             }
-            else{
+            else {
                 return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
             }
         });
-       
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+};
+let getBookingPatient = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            let infor = await patientService.getBookingPatient(req.query.id);
+            return res.status(200).json(infor);
+
+
+        });
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+};
+let putPatientFeedback = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            let infor = await patientService.putPatientFeedback(req.body);
+            return res.status(200).json(infor);
+        });
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+};
+let getFeedbackAdmin = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+
+            const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
+            if ( role === 'R1') {
+                let infor = await patientService.getFeedbackAdmin();
+                return res.status(200).json(infor);
+            }
+            else {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+        });
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+};
+let putApproveFeedback = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+
+            const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
+            if ( role === 'R1') {
+                let infor = await patientService.putApproveFeedback(req.body);
+                return res.status(200).json(infor);
+            }
+            else {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token.' });
+            }
+        });
+
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+};
+let getHistoryById = async (req, res) => {
+    try {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+
+            const role = decoded.roleId; // Giả sử thông tin người dùng lưu trong token
+            if (role === 'R1' || role === 'R2') {
+                let infor = await patientService.getHistoryById(req.query.id);
+                return res.status(200).json(infor);
+            }
+            else {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+        });
+
 
     } catch (e) {
         console.log(e);
@@ -230,7 +368,12 @@ module.exports = {
     createNewPatientRecord: createNewPatientRecord,
     updatePatientRecord: updatePatientRecord,
     getAllBookingAdmin: getAllBookingAdmin,
-    confirmAppointment:confirmAppointment,
-    getBookingById:getBookingById
-    
+    confirmAppointment: confirmAppointment,
+    getBookingById: getBookingById,
+    getBookingPatient: getBookingPatient,
+    putPatientFeedback:putPatientFeedback,
+    getFeedbackAdmin:getFeedbackAdmin,
+    putApproveFeedback:putApproveFeedback,
+    getHistoryById:getHistoryById
+
 }
