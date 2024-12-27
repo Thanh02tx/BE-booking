@@ -32,12 +32,12 @@ module.exports = (sequelize, DataTypes) => {
     paymentId: DataTypes.STRING,
     noteVi: DataTypes.STRING,
     noteEn: DataTypes.STRING,
-    contentHTMLVi:DataTypes.TEXT('long'),
-    contentMarkdownVi: DataTypes.TEXT('long'),
-    contentHTMLEn:DataTypes.TEXT('long'),
-    contentMarkdownEn: DataTypes.TEXT('long'),
-    descriptionVi:DataTypes.TEXT('long'),
-    descriptionEn:DataTypes.TEXT('long'),
+    contentHTMLVi:DataTypes.TEXT,
+    contentMarkdownVi: DataTypes.TEXT,
+    contentHTMLEn:DataTypes.TEXT,
+    contentMarkdownEn: DataTypes.TEXT,
+    descriptionVi:DataTypes.TEXT,
+    descriptionEn:DataTypes.TEXT,
     count: DataTypes.INTEGER
   }, {
     sequelize,

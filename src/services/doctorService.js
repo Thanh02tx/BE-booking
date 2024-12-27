@@ -315,39 +315,39 @@ let getScheduleByDate = (doctorId, date) => {
         }
     })
 }
-let getScheduleByToken = (token) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!token) {
-                resolve({
-                    errCode: 1,
-                    errMessage: 'Missing required parameter!'
-                })
-            } else {
-                let data = await db.Schedule.findOne({
-                    where: {
-                        token: token,
-                    },
-                    include: [
-                        { model: db.Allcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
-                        { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
+// let getScheduleByToken = (token) => {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             if (!token) {
+//                 resolve({
+//                     errCode: 1,
+//                     errMessage: 'Missing required parameter!'
+//                 })
+//             } else {
+//                 let data = await db.Schedule.findOne({
+//                     where: {
+//                         token: token,
+//                     },
+//                     include: [
+//                         { model: db.Allcode, as: 'timeTypeData', attributes: ['valueEn', 'valueVi'] },
+//                         { model: db.User, as: 'doctorData', attributes: ['firstName', 'lastName'] },
 
-                    ],
-                    raw: false,
-                    nest: true
-                })
-                if (!data) data = {};
-                resolve({
-                    errCode: 0,
-                    data: data
-                })
-            }
-        }
-        catch (e) {
-            reject(e);
-        }
-    })
-}
+//                     ],
+//                     raw: false,
+//                     nest: true
+//                 })
+//                 if (!data) data = {};
+//                 resolve({
+//                     errCode: 0,
+//                     data: data
+//                 })
+//             }
+//         }
+//         catch (e) {
+//             reject(e);
+//         }
+//     })
+// }
 let getExtraInforDoctorById = (doctorId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -439,6 +439,7 @@ let getProfileDoctorById = (inputId) => {
 let getListPatientForDoctor = (doctorId, date) => {
     return new Promise(async (resolve, reject) => {
         try {
+            console.log('ss',doctorId,date)
             if (!doctorId || !date) {
                 resolve({
                     errCode: 1,
@@ -547,7 +548,7 @@ module.exports = {
     getDetailDoctorById: getDetailDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
-    getScheduleByToken: getScheduleByToken,
+    // getScheduleByToken: getScheduleByToken,
     getExtraInforDoctorById: getExtraInforDoctorById,
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,

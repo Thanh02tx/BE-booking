@@ -2,7 +2,6 @@ import db from '../models/index';
 
 
 let createClinic = (data) => {
-    console.log(data)
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.name||!data.provinceId || !data.address|| !data.addressMap || !data.imageBase64 || !data.descriptionHTMLVi || !data.descriptionHTMLEn || !data.descriptionMarkdownVi || !data.descriptionMarkdownEn) {
@@ -104,7 +103,6 @@ let getDetailClinicById =(inputId, specialty) => {
     })
 }
 let putEditClinic = (data) => {
-    console.log("fssf",data)
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id||!data.name||!data.provinceId || !data.address

@@ -182,7 +182,6 @@ let sendRemedy=async(req,res)=>{
             if (err) {
                 return res.status(403).json({ errCode: -3, message: 'Invalid or expired token.' });
             }
-            console.log('sss',token)
             const role = decoded.roleId;
             const doctorId=decoded.id;
             let data= {
@@ -207,19 +206,19 @@ let sendRemedy=async(req,res)=>{
         });
     }
 }
-let getScheduleByToken=async(req,res)=>{
-    try{
-        let infor = await doctorService.getScheduleByToken(req.query.token);
+// let getScheduleByToken=async(req,res)=>{
+//     try{
+//         let infor = await doctorService.getScheduleByToken(req.query.token);
    
-        return res.status(200).json(infor)
-    }catch(e){
-        console.log(e);
-        return res.status(200).json({
-            errCode: -1,
-           message: 'Error from server...'
-       })
-    }
-}
+//         return res.status(200).json(infor)
+//     }catch(e){
+//         console.log(e);
+//         return res.status(200).json({
+//             errCode: -1,
+//            message: 'Error from server...'
+//        })
+//     }
+// }
 
 module.exports ={
     getTopDoctorHome:getTopDoctorHome,
@@ -229,7 +228,7 @@ module.exports ={
     getDetailDoctorById:getDetailDoctorById,
     bulkCreateSchedule:bulkCreateSchedule,
     getScheduleByDate:getScheduleByDate,
-    getScheduleByToken:getScheduleByToken,
+    // getScheduleByToken:getScheduleByToken,
     getExtraInforDoctorById:getExtraInforDoctorById,
     getProfileDoctorById:getProfileDoctorById,
     getListPatientForDoctor:getListPatientForDoctor,

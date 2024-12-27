@@ -3,75 +3,77 @@ import db from '../models/index';
 import emailService from '../services/emailService';
 require('dotenv').config();
 import { v4 as uuid4 } from 'uuid';
+const { Op } = require('sequelize');
+const moment = require('moment-timezone');
 let buildUrlEmail = (scheduleId, token) => {
     let result = `${process.env.URL_REACT}/verify-booking?token=${token}&scheduleId=${scheduleId}`;
     return result;
 }
-let postBookingAppointment = (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if (!data.schedule || !data.patientId || !data.reason) {
-                resolve({
-                    errCode: 1,
-                    errMessage: "Missing parameter"
-                })
+// let postBookingAppointment = (data) => {
+//     return new Promise(async (resolve, reject) => {
+//         try {
+//             if (!data.schedule || !data.patientId || !data.reason) {
+//                 resolve({
+//                     errCode: 1,
+//                     errMessage: "Missing parameter"
+//                 })
 
-            }
-            else {
-                let patient = await db.Patient_Record.findOne({
-                    where: {
-                        id: data.patientId
-                    },
-                    include: [
-                        {
-                            model: db.Booking,
-                            attributes: [],
-                            required: true,
-                            include: [
-                                {
-                                    model: db.Schedule,
-                                    where: {
-                                        doctorId: data.schedule.doctorId,
-                                        date: data.schedule.date
-                                    },
-                                    required: true
-                                }
-                            ]
-                        },
-                    ],
-                    raw: true,
-                    nest: true
+//             }
+//             else {
+//                 let patient = await db.Patient_Record.findOne({
+//                     where: {
+//                         id: data.patientId
+//                     },
+//                     include: [
+//                         {
+//                             model: db.Booking,
+//                             attributes: [],
+//                             required: true,
+//                             include: [
+//                                 {
+//                                     model: db.Schedule,
+//                                     where: {
+//                                         doctorId: data.schedule.doctorId,
+//                                         date: data.schedule.date
+//                                     },
+//                                     required: true
+//                                 }
+//                             ]
+//                         },
+//                     ],
+//                     raw: true,
+//                     nest: true
 
-                })
-                if (!patient) {
-                    let token = uuid4();
-                    let book = await db.Booking.create({ // đặt lịch
-                        statusId: 'S2',
-                        patientId: data.patientId,
-                        scheduleId: data.schedule.id,
-                        token: token,
-                        reason: data.reason
-                    })
-                    resolve({
-                        errCode: 0,
-                        errMessage: "Succeed"
-                    })
-                } else {
-                    resolve({
-                        errCode: 2,
-                        errMessage: 'Missing'
-                    })
-                }
+//                 })
+//                 if (!patient) {
+//                     let token = uuid4();
+//                     let book = await db.Booking.create({ // đặt lịch
+//                         statusId: 'S2',
+//                         patientId: data.patientId,
+//                         scheduleId: data.schedule.id,
+//                         token: token,
+//                         reason: data.reason
+//                     })
+//                     resolve({
+//                         errCode: 0,
+//                         errMessage: "Succeed"
+//                     })
+//                 } else {
+//                     resolve({
+//                         errCode: 2,
+//                         errMessage: 'Missing'
+//                     })
+//                 }
 
 
-            }
+//             }
 
-        }
-        catch (e) {
-            reject(e);
-        }
-    })
-}
+//         }
+//         catch (e) {
+//             reject(e);
+//         }
+//     })
+// }
 let postVerifyBookAppointment = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -180,7 +182,6 @@ let postBookAppointmentNoSignIn = (data) => {
                         token: token,
                         reason: data.reason
                     })
-                    console.log('ssd', data)
                     await emailService.sendSimpleEmail({
                         reciverEmail: data.email,
                         patientName: `${data.firstName} ${data.lastName}`,
@@ -189,12 +190,18 @@ let postBookAppointmentNoSignIn = (data) => {
                         language: data.language,
                         redirectLink: buildUrlEmail(data.schedule.id, token),
                     })
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'ok'
+                    })
+                }else{
+                    resolve({
+                        errCode: 2,
+                        errMessage: 'loi'
+                    })
                 }
 
-                resolve({
-                    errCode: 0,
-                    errMessage: 'ok'
-                })
+                
             }
         }
         catch (e) {
@@ -275,7 +282,6 @@ let createNewPatientRecord = (data) => {
     })
 }
 let updatePatientRecord = (data) => {
-    console.log('ssd', data)
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.id || !data.firstName || !data.lastName || !data.email || !data.provinceId ||
@@ -325,69 +331,80 @@ let updatePatientRecord = (data) => {
     })
 }
 
-let getAllBookingAdmin = () => {
+let getAllBookingAdmin = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-
-            let data = await db.Booking.findAll({
-                where: {
-                    statusId: 'S2'
-                },
-                attributes: ['id', 'reason'],
-                include: [
-                    {
-                        model: db.Schedule,
-                        attributes: ['date'],
-                        include: [
-                            {
-                                model: db.User,
-                                as: 'doctorData',
-                                attributes: ['firstName', 'lastName'],
-                                include: [
-                                    {
-                                        model: db.Doctor_Infor,
-                                        attributes: [],
-                                        include: [
-                                            {
-                                                model: db.Specialty,
-                                                attributes: ['nameVi', 'nameEn'],
-                                            },
-                                            {
-                                                model: db.Clinic,
-                                                attributes: ['name', 'address'],
-                                            },
-                                            {
-                                                model: db.Allcode,
-                                                as: 'positionData',
-                                                attributes: ['valueVi', 'valueEn'],
-                                            }
-
-                                        ]
-                                    }
-                                ]
+            if (!data.clinic || !data.status || !data.date) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let bookings = await db.Booking.findAll({
+                    where: data.status !=='ALL' ? {statusId:data.status} :undefined,
+                    attributes: ['id', 'reason', 'statusId'],
+                    include: [
+                        {
+                            model: db.Schedule,
+                            attributes: ['date'],
+                            where: {
+                                date: data.date
                             },
-                            {
-                                model: db.Allcode,
-                                as: 'timeTypeData',
-                                attributes: ['valueVi', 'valueEn'],
-                            }
-                        ]
-                    },
-                    {
-                        model: db.Patient_Record,
-                        attributes: ['lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId'],
-                    }
-                ],
-                raw: true,
-                nest: true
-            })
-            if (!data) data = []
-            resolve({
-                errCode: 0,
-                data: data
-            })
+                            include: [
+                                {
+                                    model: db.User,
+                                    as: 'doctorData',
+                                    attributes: ['firstName', 'lastName'],
+                                    include: [
+                                        {
+                                            model: db.Doctor_Infor,
+                                            attributes: [],
+                                            include: [
+                                                {
+                                                    model: db.Specialty,
+                                                    attributes: ['nameVi', 'nameEn'],
+                                                },
+                                                {
+                                                    model: db.Clinic,
+                                                    where: data.clinic !== 'ALL' ? { id: data.clinic } : undefined,
+                                                    attributes: ['name', 'address'],
+                                                },
+                                                {
+                                                    model: db.Allcode,
+                                                    as: 'positionData',
+                                                    attributes: ['valueVi', 'valueEn'],
+                                                }
 
-
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    model: db.Allcode,
+                                    as: 'timeTypeData',
+                                    attributes: ['valueVi', 'valueEn'],
+                                }
+                            ]
+                        },
+                        {
+                            model: db.Patient_Record,
+                            attributes: ['lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId'],
+                        },
+                        {
+                            model: db.Allcode,
+                            as: 'statusData',
+                            attributes: ['valueVi', 'valueEn'],
+                        }
+                    ],
+                    raw: true,
+                    nest: true
+                })
+                if (!bookings) bookings = []
+                resolve({
+                    errCode: 0,
+                    data: bookings
+                })
+            }
         } catch (e) {
             reject(e)
         }
@@ -610,7 +627,7 @@ let getBookingPatient = (idInput) => {
 let putPatientFeedback = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.staffRating&&!data.waitingTimeRating&&!data.doctorRating&&!data.facilityRating&&!data.id) {
+            if (!data.staffRating && !data.waitingTimeRating && !data.doctorRating && !data.facilityRating && !data.id) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing parameter"
@@ -620,26 +637,26 @@ let putPatientFeedback = (data) => {
                     where: {
                         id: data.id
                     },
-                    raw:false 
+                    raw: false
                 })
 
                 if (history) {
-                    history.doctorRating=data.doctorRating,
-                    history.waitingTimeRating= data.waitingTimeRating,
-                    history.staffRating= data.staffRating,
-                    history.facilityRating=data.facilityRating,
-                    history.comments=data.detailFeedback,
-                    history.status=2
+                    history.doctorRating = data.doctorRating,
+                        history.waitingTimeRating = data.waitingTimeRating,
+                        history.staffRating = data.staffRating,
+                        history.facilityRating = data.facilityRating,
+                        history.comments = data.detailFeedback,
+                        history.status = 2
                     await history.save()
-                }else{
+                } else {
                     resolve({
-                        errCode:2,
+                        errCode: 2,
                     })
                 }
                 resolve({
-                    errCode:0,
-                    errMessage:'ok'
-                }) 
+                    errCode: 0,
+                    errMessage: 'ok'
+                })
             }
         } catch (e) {
             reject(e)
@@ -651,17 +668,17 @@ let getFeedbackAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let data = await db.History.findAll({
-                where:{
-                    status:2
+                where: {
+                    status: 2
                 },
-                attributes:{
-                    exclude:['imageResult']
+                attributes: {
+                    exclude: ['imageResult']
                 }
             })
-            if(!data) data =[];
+            if (!data) data = [];
             resolve({
-                errCode:0,
-                data:data
+                errCode: 0,
+                data: data
             })
         } catch (e) {
             reject(e)
@@ -670,35 +687,35 @@ let getFeedbackAdmin = () => {
 }
 let putApproveFeedback = (data) => {
     return new Promise(async (resolve, reject) => {
-        // console.log('ss',data)
+
         try {
-            if(!data.id){
+            if (!data.id) {
                 resolve({
-                    errCode:1,
-                    errMessage:'Mising parameter'
+                    errCode: 1,
+                    errMessage: 'Mising parameter'
                 })
-            }else{
+            } else {
                 let htr = await db.History.findOne({
-                    where:{
-                        id:data.id,
-                        status:2
+                    where: {
+                        id: data.id,
+                        status: 2
                     },
-                    raw:false
+                    raw: false
                 })
-                if(htr) {
-                    htr.status=3
+                if (htr) {
+                    htr.status = 3
                     await htr.save()
                     resolve({
-                        errCode:0,
-                        errMessage:"ok"
+                        errCode: 0,
+                        errMessage: "ok"
                     })
                 }
                 resolve({
-                    errCode:2,
-                    errMessage:'No hisroty'
+                    errCode: 2,
+                    errMessage: 'No hisroty'
                 })
             }
-            
+
         } catch (e) {
             reject(e)
         }
@@ -721,9 +738,10 @@ let getHistoryById = (id) => {
                     },
                     attributes: ['id'],
                     include: [
-                        {model: db.Booking,
+                        {
+                            model: db.Booking,
                             attributes: ['reason'],
-                            include:[
+                            include: [
                                 {
                                     model: db.Schedule,
                                     attributes: ['date'],
@@ -757,7 +775,7 @@ let getHistoryById = (id) => {
                                                             as: 'positionData',
                                                             attributes: ['valueVi', 'valueEn'],
                                                         }
-        
+
                                                     ]
                                                 }
                                             ]
@@ -782,7 +800,7 @@ let getHistoryById = (id) => {
                                 }
                             ]
                         }
-                        
+
                     ],
                     raw: true,
                     nest: true
@@ -799,8 +817,102 @@ let getHistoryById = (id) => {
         }
     })
 }
+let getAllUpcomingAppointment = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const timestamp = moment.tz('Asia/Ho_Chi_Minh').startOf('day').unix()*1000;
+            let data = await db.Booking.findAll({
+                where: {
+                    statusId: {
+                        [Op.in]: ['S2', 'S3'] 
+                    }
+                },
+                attributes: ['id', 'reason','statusId'],
+                include: [
+                    {
+                        model: db.Schedule,
+                        where:{
+                            date: {
+                                [Op.gte]: timestamp  // Ensure we only get appointments with a date greater than or equal to today's date
+                            }
+                        },
+                        attributes: ['date'],
+                        include: [
+                            {
+                                model: db.User,
+                                as: 'doctorData',
+                                attributes: ['firstName', 'lastName'],
+                                include: [
+                                    {
+                                        model: db.Doctor_Infor,
+                                        attributes: [],
+                                        include: [
+                                            {
+                                                model: db.Specialty,
+                                                attributes: ['nameVi', 'nameEn'],
+                                            },
+                                            {
+                                                model: db.Clinic,
+                                                attributes: ['name', 'address'],
+                                                include: [
+                                                    {
+                                                        model: db.Allcode,
+                                                        as: 'provinceData',
+                                                        attributes: ['valueVi', 'valueEn'],
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                model: db.Allcode,
+                                                as: 'positionData',
+                                                attributes: ['valueVi', 'valueEn'],
+                                            }
+
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                model: db.Allcode,
+                                as: 'timeTypeData',
+                                attributes: ['valueVi', 'valueEn'],
+                            }
+                        ]
+                    },
+                    {
+                        model: db.Patient_Record,
+                        attributes: ['id', 'lastName', 'firstName', 'dateOfBirth', 'email', 'provinceId', 'districtId', 'wardId', 'address'],
+                        include: [
+                            {
+                                model: db.Allcode,
+                                as: 'genderPatient',
+                                attributes: ['valueVi', 'valueEn'],
+                            }
+                        ]
+                    },
+                    {
+                        model: db.Allcode,
+                        as: 'statusData',
+                        attributes: ['valueVi', 'valueEn'],
+                    }
+                ],
+                raw: true,
+                nest: true
+            })
+            if (!data) data = []
+            resolve({
+                errCode: 0,
+                data: data
+            })
+
+
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 module.exports = {
-    postBookingAppointment: postBookingAppointment,
+    // postBookingAppointment: postBookingAppointment,
     postVerifyBookAppointment: postVerifyBookAppointment,
     postBookAppointmentNoSignIn: postBookAppointmentNoSignIn,
     getAllPatientRecord: getAllPatientRecord,
@@ -810,8 +922,9 @@ module.exports = {
     confirmAppointment: confirmAppointment,
     getBookingById: getBookingById,
     getBookingPatient: getBookingPatient,
-    putPatientFeedback:putPatientFeedback,
-    getFeedbackAdmin:getFeedbackAdmin,
-    putApproveFeedback:putApproveFeedback,
-    getHistoryById:getHistoryById
+    putPatientFeedback: putPatientFeedback,
+    getFeedbackAdmin: getFeedbackAdmin,
+    putApproveFeedback: putApproveFeedback,
+    getHistoryById: getHistoryById,
+    getAllUpcomingAppointment: getAllUpcomingAppointment
 }

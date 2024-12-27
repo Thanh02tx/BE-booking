@@ -20,7 +20,6 @@ let createNewHandbook = (data) => {
                 })
 
                 if (handbook) {
-                    console.log('sdf', handbook.id)
                     if (data.listHeading.length > 0) {
                         const headingPromises = data.listHeading.map(async (item, index) => {
                             return await db.Handbook_Content.create({

@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     descriptionHTMLVi: DataTypes.TEXT,
     descriptionMarkdownVi:DataTypes.TEXT,
     descriptionMarkdownEn:DataTypes.TEXT,
-    image: DataTypes.BLOB('long'),
+    image: DataTypes.TEXT,
     
   }, {
     sequelize,

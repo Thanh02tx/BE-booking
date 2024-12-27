@@ -4,7 +4,6 @@ const { where } = require("sequelize")
 
 
 let createSpecialty = (data) => {
-    console.log('sfa',data)
 
     return new Promise(async (resolve, reject) => {
         try {
