@@ -219,7 +219,95 @@ let sendRemedy=async(req,res)=>{
 //        })
 //     }
 // }
+let postChangeActiveDoctor=async(req,res)=>{
+    try {
+        const token = req.headers['authorization']?.split(' ')[1]; 
+        console.log('a',req.body)
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            const role = decoded.roleId;
+            if(role==='R1'){
+                let infor = await doctorService.postChangeActiveDoctor(req.body);
+                return res.status(200).json(infor);
+            }
+            else{
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+        });
+       
 
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+}
+let postCreateDoctorInfor=async(req,res)=>{
+    try {
+        const token = req.headers['authorization']?.split(' ')[1]; 
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            const role = decoded.roleId;
+            if(role==='R1'){
+                let infor = await doctorService.postCreateDoctorInfor(req.body);
+                return res.status(200).json(infor);
+            }
+            else{
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+        });
+       
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+}
+
+let postUpdateDoctorInfor=async(req,res)=>{
+    try {
+        const token = req.headers['authorization']?.split(' ')[1]; 
+        if (!token) {
+            return res.status(401).json({ errCode: -2, message: 'Token is required' });
+        }
+        jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+            if (err) {
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+            const role = decoded.roleId;
+            if(role==='R1'){
+                let infor = await doctorService.postUpdateDoctorInfor(req.body);
+                return res.status(200).json(infor);
+            }
+            else{
+                return res.status(403).json({ errCode: -3, message: 'Invalid or expired token' });
+            }
+        });
+       
+
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Error from server...'
+        });
+    }
+}
 module.exports ={
     getTopDoctorHome:getTopDoctorHome,
     getAllDoctors:getAllDoctors,
@@ -228,9 +316,12 @@ module.exports ={
     getDetailDoctorById:getDetailDoctorById,
     bulkCreateSchedule:bulkCreateSchedule,
     getScheduleByDate:getScheduleByDate,
+    postChangeActiveDoctor:postChangeActiveDoctor,
+    postCreateDoctorInfor:postCreateDoctorInfor,
     // getScheduleByToken:getScheduleByToken,
     getExtraInforDoctorById:getExtraInforDoctorById,
     getProfileDoctorById:getProfileDoctorById,
     getListPatientForDoctor:getListPatientForDoctor,
     sendRemedy:sendRemedy,
+    postUpdateDoctorInfor:postUpdateDoctorInfor
 }

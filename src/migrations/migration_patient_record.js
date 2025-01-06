@@ -9,7 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       idAccount: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       firstName: {
         allowNull: false,
@@ -23,16 +24,19 @@ module.exports = {
         type: Sequelize.STRING
       },
       email: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       dateOfBirth: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       bhyt: {
         type: Sequelize.STRING
       },
       relationship: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       provinceId: {
         allowNull: false,
@@ -46,7 +50,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       address: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       gender: {
         allowNull: false,

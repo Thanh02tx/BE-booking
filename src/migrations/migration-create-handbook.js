@@ -9,12 +9,15 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       nameVi:{
+        allowNull: false,
         type: Sequelize.STRING
       },
       nameEn: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       image: {
+        allowNull: false,
         type: Sequelize.BLOB('long')
       },
       createdAt: {

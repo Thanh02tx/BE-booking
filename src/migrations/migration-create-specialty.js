@@ -9,24 +9,31 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       image: {
+        allowNull: false,
         type: Sequelize.BLOB('long')
       },
       nameVi: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       nameEn: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       descriptionHTMLVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionMarkdownVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionHTMLEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionMarkdownEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       createdAt: {

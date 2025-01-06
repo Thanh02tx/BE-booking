@@ -5,6 +5,7 @@ require('dotenv').config();
 import { v4 as uuid4 } from 'uuid';
 const { Op } = require('sequelize');
 const moment = require('moment-timezone');
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 let buildUrlEmail = (scheduleId, token) => {
     let result = `${process.env.URL_REACT}/verify-booking?token=${token}&scheduleId=${scheduleId}`;
     return result;
@@ -157,51 +158,64 @@ let postBookAppointmentNoSignIn = (data) => {
 
                 // })
 
-
-                let token = uuid4();
-                let patient_record = await db.Patient_Record.create({ // thêm người bệnh 
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    phoneNumber: data.phoneNumber,
-                    email: data.email,
-                    dateOfBirth: data.dateOfBirth,
-                    bhyt: data.bhyt,
-                    provinceId: data.province,
-                    districtId: data.district,
-                    wardId: data.ward,
-                    address: data.address,
-                    gender: data.gender,
-
+                let schedule = await db.Schedule.findOne({
+                    where: {
+                        id: data.schedule.id
+                    },
+                    raw: false
                 })
+                if (schedule && schedule.currentNumber < MAX_NUMBER_SCHEDULE) {
+                    let token = uuid4();
+                    let patient_record = await db.Patient_Record.create({ // thêm người bệnh 
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phoneNumber: data.phoneNumber,
+                        email: data.email,
+                        dateOfBirth: data.dateOfBirth,
+                        bhyt: data.bhyt,
+                        provinceId: data.province,
+                        districtId: data.district,
+                        wardId: data.ward,
+                        address: data.address,
+                        gender: data.gender,
 
-                if (patient_record) {
-                    let book = await db.Booking.create({ // đặt lịch
-                        statusId: 'S1',
-                        patientId: patient_record.id,
-                        scheduleId: data.schedule.id,
-                        token: token,
-                        reason: data.reason
                     })
-                    await emailService.sendSimpleEmail({
-                        reciverEmail: data.email,
-                        patientName: `${data.firstName} ${data.lastName}`,
-                        time: data.timeString,
-                        doctorName: data.doctorName,
-                        language: data.language,
-                        redirectLink: buildUrlEmail(data.schedule.id, token),
-                    })
-                    resolve({
-                        errCode: 0,
-                        errMessage: 'ok'
-                    })
+
+                    if (patient_record) {
+                        let book = await db.Booking.create({ // đặt lịch
+                            statusId: 'S1',
+                            patientId: patient_record.id,
+                            scheduleId: data.schedule.id,
+                            token: token,
+                            reason: data.reason
+                        })
+                        await emailService.sendSimpleEmail({
+                            reciverEmail: data.email,
+                            patientName: `${data.firstName} ${data.lastName}`,
+                            time: data.timeString,
+                            doctorName: data.doctorName,
+                            language: data.language,
+                            redirectLink: buildUrlEmail(data.schedule.id, token),
+                        })
+                        resolve({
+                            errCode: 0,
+                            errMessage: 'ok'
+                        })
+                    } else {
+                        resolve({
+                            errCode: 2,
+                            errMessage: 'loi'
+                        })
+                    }
                 }else{
                     resolve({
-                        errCode: 2,
-                        errMessage: 'loi'
+                        errCode:3,
+                        errMessage:'Het lươt trong'
                     })
                 }
 
-                
+
+
             }
         }
         catch (e) {
@@ -301,7 +315,7 @@ let updatePatientRecord = (data) => {
                 if (patient) {
                     patient.firstName = data.firstName,
                         patient.lastName = data.lastName,
-                        patient.email = patient.email,
+                        patient.email = data.email,
                         patient.phoneNumber = data.phoneNumber,
                         patient.dateOfBirth = data.dateOfBirth,
                         patient.bhyt = data.bhyt,
@@ -341,7 +355,7 @@ let getAllBookingAdmin = (data) => {
                 })
             } else {
                 let bookings = await db.Booking.findAll({
-                    where: data.status !=='ALL' ? {statusId:data.status} :undefined,
+                    where: data.status !== 'ALL' ? { statusId: data.status } : undefined,
                     attributes: ['id', 'reason', 'statusId'],
                     include: [
                         {
@@ -820,18 +834,18 @@ let getHistoryById = (id) => {
 let getAllUpcomingAppointment = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const timestamp = moment.tz('Asia/Ho_Chi_Minh').startOf('day').unix()*1000;
+            const timestamp = moment.tz('Asia/Ho_Chi_Minh').startOf('day').unix() * 1000;
             let data = await db.Booking.findAll({
                 where: {
                     statusId: {
-                        [Op.in]: ['S2', 'S3'] 
+                        [Op.in]: ['S2', 'S3']
                     }
                 },
-                attributes: ['id', 'reason','statusId'],
+                attributes: ['id', 'reason', 'statusId'],
                 include: [
                     {
                         model: db.Schedule,
-                        where:{
+                        where: {
                             date: {
                                 [Op.gte]: timestamp  // Ensure we only get appointments with a date greater than or equal to today's date
                             }

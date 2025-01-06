@@ -37,6 +37,9 @@ let initWebRoutes = (app) =>{
     router.get('/api/top-doctor-home',doctorController.getTopDoctorHome);//
     router.get('/api/get-all-doctors',doctorController.getAllDoctors);//
     router.post('/api/save-infor-doctor',doctorController.postInforDoctor);//
+    router.post('/api/post-create-infor-doctor',doctorController.postCreateDoctorInfor);//
+    router.post('/api/post-update-infor-doctor',doctorController.postUpdateDoctorInfor);//
+    router.post('/api/post-change-active-doctor',doctorController.postChangeActiveDoctor);//
     router.get('/api/get-infor-doctor-by-id',doctorController.getInforDoctorById);//
     router.get('/api/get-detail-doctor-by-id',doctorController.getDetailDoctorById);//
     router.get('/api/get-list-patient-for-doctor',doctorController.getListPatientForDoctor);//
@@ -82,7 +85,7 @@ let initWebRoutes = (app) =>{
     router.get('/api/get-feedback-admin',patientController.getFeedbackAdmin);
     router.put('/api/put-approve-feedback',patientController.putApproveFeedback);
     router.get('/api/get-history-by-id',patientController.getHistoryById);
-    router.get('/api/get-all-upcoming-appointment',patientController.getAllUpcomingAppointment);//
+    router.get('/api/get-all-upcoming-appointment',patientController.getAllUpcomingAppointment);//getAllnewAppointment
     router.put('/api/cancel-appointment',bookingController.cancelAppointment);//
     router.get('/api/all-schedule-doctor-by-date',scheduleController.allScheduleDoctorByDate);//
     router.post('/api/save-doctor-schedule-by-date',scheduleController.saveDoctorScheduleByDate);//

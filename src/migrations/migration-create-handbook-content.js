@@ -9,24 +9,31 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       handbookId:{
+        allowNull: false,
         type: Sequelize.INTEGER
       },
       headingVi: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       headingEn: {
+        allowNull: false,
         type: Sequelize.STRING
       },
       contentHTMLVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       contentHTMLEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       contentMarkdownVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       contentMarkdownEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       createdAt: {

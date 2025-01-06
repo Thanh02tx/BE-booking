@@ -9,30 +9,39 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       name:{
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       image: {
+        allowNull: false,
         type: Sequelize.BLOB('long')
       },
       address:{
+        allowNull: false,
         type: Sequelize.STRING
       },
       addressMap:{
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionHTMLVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionMarkdownVi: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionHTMLEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       descriptionMarkdownEn: {
+        allowNull: false,
         type: Sequelize.TEXT
       },
       provinceId:{
+        allowNull: false,
         type: Sequelize.STRING
       },
       createdAt: {

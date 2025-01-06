@@ -10,7 +10,9 @@ let getTopDoctorHomeService = (limitInput) => {
         try {
             let users = await db.User.findAll({
                 limit: limitInput,
-                where: { roleId: 'R2' },
+                where: { 
+                    roleId: 'R2' 
+                },
                 order: [['createdAt', 'DESC']],
                 attributes: {
                     exclude: ['password']
@@ -18,6 +20,9 @@ let getTopDoctorHomeService = (limitInput) => {
                 include: [
                     {
                         model: db.Doctor_Infor,
+                        where:{
+                            isActive:1
+                        },
                         attributes: ['specialtyId', 'image'],
                         include: [
                             { model: db.Specialty, attributes: ['nameVi', 'nameEn'] },
@@ -46,7 +51,20 @@ let getAllDoctors = () => {
                 where: { roleId: 'R2' },
                 attributes: {
                     exclude: ['password']
-                }
+                },
+                include: [
+                    {
+                        model: db.Doctor_Infor,
+                        attributes: ['isActive', 'id'],
+                        // include: [
+                        //     { model: db.Specialty, attributes: ['nameVi', 'nameEn'] },
+                        //     { model: db.Allcode, as: 'positionData', attributes: ['valueEn', 'valueVi'] },
+                        //     { model: db.Allcode, as: 'genderData', attributes: ['valueEn', 'valueVi'] },
+                        // ]
+                    }
+                ],
+                raw: true,
+                nest: true
 
             });
             resolve({
@@ -539,6 +557,138 @@ let sendRemedy = (data) => {
         }
     })
 }
+let postChangeActiveDoctor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log('sda',data)
+            if(!data.id||data.isActive==null){
+                resolve({
+                    errCode:1,
+                    errMessage:'Missing parameter'
+                })
+            }
+            else{
+                let doctor = await db.Doctor_Infor.findOne({
+                    where:{
+                        id:data.id
+                    },
+                    raw:false
+                })
+                if(doctor){
+                    doctor.isActive=data.isActive
+                    await doctor.save()
+                    resolve({
+                        errCode: 0,
+                        errMessage:'ok'
+                    })
+                }else{
+                    resolve({
+                        errCode:2,
+                        errMessage:'not found'
+                    })
+                }
+            }
+            
+        }
+        catch (e) {
+            reject(e)
+        }
+    })
+}
+let postCreateDoctorInfor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.doctorId || !data.specialtyId || !data.clinicId || !data.positionId || !data.priceId || !data.gender
+                || !data.image || !data.paymentId || !data.contentHTMLVi || !data.contentHTMLEn || !data.contentMarkdownVi
+                || !data.contentMarkdownEn || !data.descriptionVi || !data.descriptionEn
+            ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                await db.Doctor_Infor.create({
+                    doctorId: data.doctorId,
+                    specialtyId: data.specialtyId,
+                    clinicId: data.clinicId,
+                    positionId: data.positionId,
+                    priceId: data.priceId,
+                    gender: data.gender,
+                    image: data.image,
+                    paymentId: data.paymentId,
+                    contentHTMLVi: data.contentHTMLVi,
+                    contentHTMLEn: data.contentHTMLEn,
+                    contentMarkdownVi: data.contentMarkdownVi,
+                    contentMarkdownEn: data.contentMarkdownEn,
+                    descriptionVi: data.descriptionVi,
+                    descriptionEn: data.descriptionEn,
+                    noteVi: data.noteVi,
+                    noteEn: data.noteEn
+                })
+                resolve({
+                    errCode: 0,
+                    errMessage: 'ok'
+                })
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
+let postUpdateDoctorInfor = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.doctorId || !data.specialtyId || !data.clinicId || !data.positionId || !data.priceId || !data.gender
+                || !data.image || !data.paymentId || !data.contentHTMLVi || !data.contentHTMLEn || !data.contentMarkdownVi
+                || !data.contentMarkdownEn || !data.descriptionVi || !data.descriptionEn
+            ) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                let doctor = await db.Doctor_Infor.findOne({
+                    where:{
+                        doctorId:data.doctorId
+                    },
+                    raw:false
+                })
+                if(doctor){
+                    doctor.specialtyId = data.specialtyId;
+                    doctor.clinicId = data.clinicId;
+                    doctor.positionId = data.positionId;
+                    doctor.priceId = data.priceId;
+                    doctor.gender = data.gender;
+                    doctor.image = data.image;
+                    doctor.paymentId = data.paymentId;
+                    doctor.contentHTMLVi = data.contentHTMLVi;
+                    doctor.contentHTMLEn = data.contentHTMLEn;
+                    doctor.contentMarkdownVi = data.contentMarkdownVi;
+                    doctor.contentMarkdownEn = data.contentMarkdownEn;
+                    doctor.descriptionVi = data.descriptionVi;
+                    doctor.descriptionEn = data.descriptionEn;
+                    doctor.noteVi = data.noteVi;
+                    doctor.noteEn = data.noteEn;
+                    await doctor.save()
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'ok'
+                    })
+                }
+                else{
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'not found'
+                    })
+                }
+            }
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     getTopDoctorHomeService: getTopDoctorHomeService,
@@ -553,4 +703,7 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getListPatientForDoctor: getListPatientForDoctor,
     sendRemedy: sendRemedy,
+    postChangeActiveDoctor:postChangeActiveDoctor,
+    postCreateDoctorInfor:postCreateDoctorInfor,
+    postUpdateDoctorInfor:postUpdateDoctorInfor
 }

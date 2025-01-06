@@ -1,4 +1,5 @@
 'use strict';
+const { decodeBase64 } = require('bcryptjs');
 const {
   Model
 } = require('sequelize');
@@ -38,7 +39,8 @@ module.exports = (sequelize, DataTypes) => {
     contentMarkdownEn: DataTypes.TEXT,
     descriptionVi:DataTypes.TEXT,
     descriptionEn:DataTypes.TEXT,
-    count: DataTypes.INTEGER
+    count: DataTypes.INTEGER,
+    isActive: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Doctor_Infor',

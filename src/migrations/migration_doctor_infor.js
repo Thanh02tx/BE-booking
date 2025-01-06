@@ -69,11 +69,9 @@ module.exports = {
         type: Sequelize.TEXT
       },
       noteVi: {
-        allowNull: false,
         type: Sequelize.STRING
       },
       noteEn: {
-        allowNull: false,
         type: Sequelize.STRING
       },
       count: {
@@ -81,7 +79,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 0
       },
-
+      isActive: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        defaultValue: 1
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

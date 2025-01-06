@@ -1,40 +1,42 @@
 import db from '../models/index';
 require('dotenv').config();
 import { v4 as uuid4 } from 'uuid';
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const moment = require('moment-timezone');
-let cancelAppointment =(data) =>{
-    return new Promise(async(resolve,reject)=>{
-        try{
-            if(!data.reason||!data.id){
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
+import emailService from './emailService';
+let cancelAppointment = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.reason || !data.id) {
                 resolve({
-                    errCode:1,
-                    errMesssage:'Missing parameter'
+                    errCode: 1,
+                    errMesssage: 'Missing parameter'
                 })
-            }else{
+            } else {
                 let booking = await db.Booking.findOne({
-                    where:{
-                        id:data.id
+                    where: {
+                        id: data.id
                     },
-                    raw:false
+                    raw: false
                 })
-                if(booking){
+                if (booking) {
                     booking.note = data.reason,
-                    booking.statusId='S5'
+                        booking.statusId = 'S5'
                     await booking.save()
                     resolve({
-                        errCode:0,
-                        errMesssage:'Delete Booking succed'
+                        errCode: 0,
+                        errMesssage: 'Delete Booking succed'
                     })
-                }else{
+                } else {
                     resolve({
-                        errCode:2,
-                        errMesssage:'Booking not found'
+                        errCode: 2,
+                        errMesssage: 'Booking not found'
                     })
                 }
-                
+
             }
-        }catch(e){
+        } catch (e) {
             reject(e);
         }
     })
@@ -76,18 +78,47 @@ let postBookingAppointment = (data) => {
 
                 })
                 if (!patient) {
-                    let token = uuid4();
-                    let book = await db.Booking.create({ // đặt lịch
-                        statusId: 'S2',
-                        patientId: data.patientId,
-                        scheduleId: data.schedule.id,
-                        token: token,
-                        reason: data.reason
+                    let schedule = await db.Schedule.findOne({
+                        where: {
+                            id: data.schedule.id
+                        },
+                        raw: false
                     })
-                    resolve({
-                        errCode: 0,
-                        errMessage: "Succeed"
-                    })
+                    if (schedule.currentNumber < MAX_NUMBER_SCHEDULE) {
+                        let token = uuid4();
+                        let book = await db.Booking.create({ // đặt lịch
+                            statusId: 'S2',
+                            patientId: data.patientId,
+                            scheduleId: data.schedule.id,
+                            token: token,
+                            reason: data.reason
+                        })
+                        if (schedule) {
+                            schedule.currentNumber = schedule.currentNumber + 1;
+                            await schedule.save();
+                        }
+                        resolve({
+                            errCode: 0,
+                            errMessage: "Succeed"
+                        })
+                    } else {
+                        resolve({
+                            errCode: 3,
+                            errMessage: 'All slots are taken'
+                        })
+                    }
+
+                    // let doctor_infor = await db.Doctor_Infor.findOne({
+                    //     where: {
+                    //         doctorId: data.schedule.doctorId,
+                    //     },
+                    //     raw: false
+                    // })
+                    // if (doctor_infor) {
+                    //     doctor_infor.count = doctor_infor.count + 1;
+                    //     await doctor_infor.save()
+                    // }
+
                 } else {
                     resolve({
                         errCode: 2,
@@ -107,7 +138,7 @@ let postBookingAppointment = (data) => {
 let confirmAppointment = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.id) {
+            if (!data.id || !data.email || !data.fullName || !data.doctor || !data.time || !data.clinic || !data.language) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing parameter"
@@ -124,6 +155,7 @@ let confirmAppointment = (data) => {
                     if (appointment.statusId === 'S2') {
                         appointment.statusId = 'S3';
                         await appointment.save();
+                        await emailService.sendAppointmentConfirmation(data)
                         resolve({
                             errCode: 0,
                             errMessage: 'Update the appointment succeed!'
@@ -141,7 +173,6 @@ let confirmAppointment = (data) => {
                         errMessage: 'Appointment does not exist!'
                     })
                 }
-
             }
         } catch (e) {
             reject(e)
@@ -246,7 +277,7 @@ let getAllBookingAdmin = (data) => {
                 })
             } else {
                 let bookings = await db.Booking.findAll({
-                    where: data.status !=='ALL' ? {statusId:data.status} :undefined,
+                    where: data.status !== 'ALL' ? { statusId: data.status } : undefined,
                     attributes: ['id', 'reason', 'statusId'],
                     include: [
                         {
@@ -331,7 +362,16 @@ let postVerifyBookAppointment = (data) => {
                     },
                     raw: false // update cần raw:false
                 })
-
+                let schedule = await db.Schedule.findOne({
+                    where: {
+                        id: data.scheduleId
+                    },
+                    raw: false
+                })
+                if (schedule) {
+                    schedule.currentNumber = schedule.currentNumber + 1
+                    await schedule.save()
+                }
                 if (appointment) {
                     if (appointment.statusId === 'S1') {
                         appointment.statusId = 'S2';
@@ -360,12 +400,12 @@ let postVerifyBookAppointment = (data) => {
         }
     })
 }
-module.exports={
-    cancelAppointment:cancelAppointment,
-    postBookingAppointment:postBookingAppointment,
-    confirmAppointment:confirmAppointment,
-    getBookingById:getBookingById,
-    getAllBookingAdmin:getAllBookingAdmin,
-    postVerifyBookAppointment:postVerifyBookAppointment
-    
+module.exports = {
+    cancelAppointment: cancelAppointment,
+    postBookingAppointment: postBookingAppointment,
+    confirmAppointment: confirmAppointment,
+    getBookingById: getBookingById,
+    getAllBookingAdmin: getAllBookingAdmin,
+    postVerifyBookAppointment: postVerifyBookAppointment
+
 }

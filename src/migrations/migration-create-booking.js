@@ -9,7 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       statusId:{
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       scheduleId: {
         allowNull:false,
@@ -20,10 +21,12 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       reason: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       token: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       note: {
         type: Sequelize.TEXT
